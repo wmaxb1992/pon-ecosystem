@@ -328,7 +328,6 @@ databases:
   # Redis - Message Broker & Caching
   - name: pon-redis
     plan: starter  # $7/month - 256MB RAM
-    maxmemoryPolicy: allkeys-lru
     
   # PostgreSQL - Main Database  
   - name: pon-database

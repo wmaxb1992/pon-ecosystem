@@ -176,7 +176,6 @@ services:
     name: ai-code-worker
     runtime: python3
     plan: starter
-    instances: 2  # Scale based on load
     
     buildCommand: pip install -r requirements_render.txt
     
@@ -186,6 +185,37 @@ services:
         --queues=code_queue \
         --concurrency=2 \
         --hostname=code_worker@%h \
+        --max-tasks-per-child=100
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: WORKER_TYPE
+        value: code_worker
+      - key: ENVIRONMENT
+        value: production
+
+  # Code Generation Worker - Instance 2
+  - type: worker
+    name: ai-code-worker-2
+    runtime: python3
+    plan: starter
+    
+    buildCommand: pip install -r requirements_render.txt
+    
+    startCommand: |
+      celery -A ai_multi_worker worker \
+        --loglevel=info \
+        --queues=code_queue \
+        --concurrency=2 \
+        --hostname=code_worker_2@%h \
         --max-tasks-per-child=100
     
     envVars:
@@ -253,6 +283,8 @@ services:
     envVars:
       - key: GROK_API_KEY
         value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
       - key: REDIS_URL
         fromService:
           type: redis
@@ -288,27 +320,9 @@ services:
       - key: SSH_ENABLED
         value: "true"
 
-# =======================================
-# DATABASES & INFRASTRUCTURE
-# =======================================
-
-databases:
-  # Redis - Message Broker & Caching
-  - name: pon-redis
-    plan: starter  # $7/month - 256MB RAM
-    maxmemoryPolicy: allkeys-lru
-    
-  # PostgreSQL - Main Database  
-  - name: pon-database
-    plan: starter  # $7/month - 256MB RAM
-    databaseName: pon_ecosystem
-    user: pon_user
-
-# =======================================
-# STATIC ASSETS & DOCUMENTATION
-# =======================================
-
-  # Documentation Site
+  # =======================================
+  # DOCUMENTATION SITE
+  # =======================================
   - type: static
     name: pon-docs
     buildCommand: |
@@ -374,6 +388,22 @@ databases:
       - path: /*
         name: Cache-Control
         value: public, max-age=3600
+
+# =======================================
+# DATABASES & INFRASTRUCTURE
+# =======================================
+
+databases:
+  # Redis - Message Broker & Caching
+  - name: pon-redis
+    plan: starter  # $7/month - 256MB RAM
+    maxmemoryPolicy: allkeys-lru
+    
+  # PostgreSQL - Main Database  
+  - name: pon-database
+    plan: starter  # $7/month - 256MB RAM
+    databaseName: pon_ecosystem
+    user: pon_user
 
 # =======================================
 # ENVIRONMENT GROUPS

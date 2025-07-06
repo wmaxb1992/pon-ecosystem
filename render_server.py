@@ -151,4 +151,10 @@ class PONEcosystemServer:
 
 if __name__ == "__main__":
     server = PONEcosystemServer()
-    asyncio.run(server.start_complete_ecosystem())
+    try:
+        # Check if there's already an event loop running
+        loop = asyncio.get_running_loop()
+        loop.create_task(server.start_complete_ecosystem())
+    except RuntimeError:
+        # No loop running, safe to use asyncio.run()
+        asyncio.run(server.start_complete_ecosystem())

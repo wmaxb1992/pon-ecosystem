@@ -327,11 +327,11 @@ services:
 databases:
   # Redis - Message Broker & Caching
   - name: pon-redis
-    plan: starter  # $7/month - 256MB RAM
+    plan: free  # Free plan - 25MB RAM, sufficient for development and small production
     
   # PostgreSQL - Main Database  
   - name: pon-database
-    plan: starter  # $7/month - 256MB RAM
+    plan: free  # Free plan - 1GB storage, sufficient for development and small production
     databaseName: pon_ecosystem
     user: pon_user
 

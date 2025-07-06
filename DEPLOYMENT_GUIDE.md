@@ -74,10 +74,14 @@ help
 ## 💰 Cost Breakdown (Render.com)
 - **Main Web Service**: $25/month (Standard plan)
 - **Workers (5 services)**: $35/month ($7 each)
-- **Redis**: $7/month (Starter)
-- **PostgreSQL**: $7/month (Starter)
+- **Redis**: Free (25MB, sufficient for small/medium workloads)
+- **PostgreSQL**: Free (1GB storage, sufficient for small/medium workloads)
 
-**Total: ~$74/month** for complete production infrastructure
+**Total: ~$60/month** for complete production infrastructure
+
+*Note: Database plans can be upgraded later if you need more capacity:*
+- *Redis Pro: $7/month (256MB) for high-traffic workloads*
+- *PostgreSQL Pro: $7/month (10GB) for larger databases*
 
 ## 🔧 Post-Deployment
 

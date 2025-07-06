@@ -102,7 +102,7 @@ services:
           property: connectionString
       - key: DATABASE_URL
         fromService:
-          type: pserv
+          type: postgres
           name: pon-database
           property: connectionString
       
@@ -326,11 +326,13 @@ services:
 
 databases:
   # Redis - Message Broker & Caching
-  - name: pon-redis
+  - type: redis
+    name: pon-redis
     plan: free  # Free plan - 25MB RAM, sufficient for development and small production
     
   # PostgreSQL - Main Database  
-  - name: pon-database
+  - type: postgres
+    name: pon-database
     plan: free  # Free plan - 1GB storage, sufficient for development and small production
     databaseName: pon_ecosystem
     user: pon_user

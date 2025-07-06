@@ -31,23 +31,31 @@ services:
     buildCommand: |
       echo "🚀 Building Complete PON Ecosystem..."
       
-      # Install Python dependencies
+      # Install Python dependencies first
       pip install --upgrade pip
       pip install -r requirements_render.txt
+      
+      # Verify critical imports work
+      python -c "import requests, rich, redis, celery; print('✅ Core dependencies installed')"
       
       # Setup environment
       mkdir -p logs videos thumbnails
       chmod +x *.sh
       
-      # Install Node.js for frontend
-      curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-      apt-get install -y nodejs
+      # Install Node.js for frontend (using system package manager)
+      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo bash -
+      sudo apt-get install -y nodejs
       
       # Build frontend
-      cd frontend
-      npm install
-      npm run build
-      cd ..
+      if [ -d "frontend" ]; then
+        cd frontend
+        npm install
+        npm run build
+        cd ..
+        echo "✅ Frontend built successfully"
+      else
+        echo "⚠️  Frontend directory not found, skipping"
+      fi
       
       # Setup AI system
       python -c "
@@ -176,7 +184,15 @@ services:
     runtime: python
     plan: starter
     
-    buildCommand: pip install -r requirements_render.txt
+    buildCommand: |
+      echo "📦 Installing dependencies for Code Worker..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      
+      # Verify Celery and Redis are installed
+      python -c "import celery, redis, requests; print('✅ Worker dependencies installed')"
+      
+      echo "✅ Code Worker build complete!"
     
     startCommand: |
       celery -A ai_multi_worker worker \
@@ -207,7 +223,11 @@ services:
     runtime: python
     plan: starter
     
-    buildCommand: pip install -r requirements_render.txt
+    buildCommand: |
+      echo "📦 Installing dependencies for Code Worker 2..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      echo "✅ Code Worker 2 build complete!"
     
     startCommand: |
       celery -A ai_multi_worker worker \
@@ -238,7 +258,11 @@ services:
     runtime: python
     plan: starter
     
-    buildCommand: pip install -r requirements_render.txt
+    buildCommand: |
+      echo "📦 Installing dependencies for Quality Worker..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      echo "✅ Quality Worker build complete!"
     
     startCommand: |
       celery -A ai_multi_worker worker \
@@ -269,7 +293,11 @@ services:
     runtime: python
     plan: starter
     
-    buildCommand: pip install -r requirements_render.txt
+    buildCommand: |
+      echo "📦 Installing dependencies for Memory Worker..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      echo "✅ Memory Worker build complete!"
     
     startCommand: |
       celery -A ai_multi_worker worker \
@@ -303,8 +331,14 @@ services:
     plan: starter
     
     buildCommand: |
-      pip install -r requirements_render.txt
       echo "🔧 Setting up SSH Terminal for instant Grok access..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      
+      # Verify critical imports work
+      python -c "import requests, rich; print('✅ Terminal dependencies installed')"
+      
+      echo "✅ SSH Terminal build complete!"
     
     startCommand: |
       python instant_grok_terminal.py --port=$PORT --production

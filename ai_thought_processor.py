@@ -18,6 +18,7 @@ import queue
 class Colors:
     LIGHT_BLUE = '\033[94m'      # Light blue for thoughts
     DARK_BLUE = '\033[34m'       # Dark blue for questions
+    BLUE = '\033[94m'            # Blue (alias for light blue)
     GREEN = '\033[92m'           # Green for success
     YELLOW = '\033[93m'          # Yellow for warnings
     RED = '\033[91m'             # Red for errors

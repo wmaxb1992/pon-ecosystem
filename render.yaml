@@ -1,0 +1,392 @@
+# PON Ecosystem - Complete Infrastructure as Code (IaC)
+# ================================================================
+# This blueprint deploys the ENTIRE PON ecosystem on Render.com:
+# - Frontend (Next.js video interface) 
+# - Backend (Python/FastAPI video processing)
+# - AI Terminal with Grok integration
+# - CEO AI Bot (strategic orchestration)
+# - Multi-Worker AI System (Celery/Redis)
+# - Database and caching layer
+# - SSH Terminal access for instant Grok AI
+# - Monitoring and logging systems
+# ================================================================
+
+version: "1"
+
+services:
+  # ===========================================
+  # MAIN WEB SERVICE - PON Ecosystem Frontend
+  # ===========================================
+  - type: web
+    name: pon-ecosystem
+    runtime: python3
+    plan: standard  # $25/month for production workloads
+    region: ohio     # ohio, oregon, or singapore
+    
+    # Auto-deploy on GitHub push to main
+    autoDeploy: true
+    branch: main
+    
+    # Build the entire ecosystem
+    buildCommand: |
+      echo "🚀 Building Complete PON Ecosystem..."
+      
+      # Install Python dependencies
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      
+      # Setup environment
+      mkdir -p logs videos thumbnails
+      chmod +x *.sh
+      
+      # Install Node.js for frontend
+      curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      apt-get install -y nodejs
+      
+      # Build frontend
+      cd frontend
+      npm install
+      npm run build
+      cd ..
+      
+      # Setup AI system
+      python -c "
+      import sqlite3
+      conn = sqlite3.connect('ai_memory.db')
+      conn.execute('CREATE TABLE IF NOT EXISTS memories (id INTEGER PRIMARY KEY, content TEXT, timestamp REAL)')
+      conn.close()
+      print('✅ AI memory database initialized')
+      "
+      
+      echo "✅ PON Ecosystem build complete!"
+    
+    # Start the complete ecosystem
+    startCommand: |
+      echo "🎯 Starting Complete PON Ecosystem..."
+      python render_server.py
+    
+    # Health check endpoint
+    healthCheckPath: /health
+    
+    # Environment variables for the entire system
+    envVars:
+      # AI Configuration
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: GROK_MODEL
+        value: grok-3-fast
+      - key: OPENAI_API_KEY
+        value: ""  # Optional fallback
+      
+      # Multi-Provider AI Keys
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: OPENROUTER_MODEL
+        value: meta-llama/llama-3.1-405b-instruct
+      - key: OPENROUTER_FALLBACK_MODEL
+        value: anthropic/claude-3.5-sonnet
+      
+      # System Configuration
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DEBUG
+        value: "false"
+      
+      # Database URLs
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: pon-database
+          property: connectionString
+      
+      # Service URLs
+      - key: FRONTEND_URL
+        value: https://pon-ecosystem.onrender.com
+      - key: BACKEND_URL
+        value: https://pon-ecosystem.onrender.com/api
+      
+      # Security
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      
+      # Feature Flags
+      - key: ENABLE_SSH_TERMINAL
+        value: "true"
+      - key: ENABLE_CEO_AI
+        value: "true"
+      - key: ENABLE_MULTI_WORKERS
+        value: "true"
+      - key: ENABLE_MONITORING
+        value: "true"
+      
+      # Resource Limits
+      - key: MAX_WORKERS
+        value: "4"
+      - key: MAX_MEMORY_MB
+        value: "1024"
+      - key: WORKER_TIMEOUT
+        value: "300"
+
+  # =======================================
+  # CEO AI BOT - Strategic Orchestration
+  # =======================================
+  - type: worker
+    name: ceo-ai-bot
+    runtime: python3
+    plan: starter
+    
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      echo "✅ CEO AI Bot ready for strategic command"
+    
+    startCommand: |
+      python ceo_ai_bot.py --mode=production --log-level=INFO
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: WORKER_TYPE
+        value: ceo_orchestrator
+      - key: ENVIRONMENT
+        value: production
+
+  # =======================================
+  # AI MULTI-WORKER SYSTEM
+  # =======================================
+  
+  # Code Generation Worker
+  - type: worker
+    name: ai-code-worker
+    runtime: python3
+    plan: starter
+    instances: 2  # Scale based on load
+    
+    buildCommand: pip install -r requirements_render.txt
+    
+    startCommand: |
+      celery -A ai_multi_worker worker \
+        --loglevel=info \
+        --queues=code_queue \
+        --concurrency=2 \
+        --hostname=code_worker@%h \
+        --max-tasks-per-child=100
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: WORKER_TYPE
+        value: code_worker
+      - key: ENVIRONMENT
+        value: production
+
+  # Quality Assurance Worker
+  - type: worker
+    name: ai-quality-worker
+    runtime: python3
+    plan: starter
+    
+    buildCommand: pip install -r requirements_render.txt
+    
+    startCommand: |
+      celery -A ai_multi_worker worker \
+        --loglevel=info \
+        --queues=quality_queue \
+        --concurrency=1 \
+        --hostname=quality_worker@%h \
+        --max-tasks-per-child=50
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: WORKER_TYPE
+        value: quality_worker
+      - key: ENVIRONMENT
+        value: production
+
+  # Memory Management Worker  
+  - type: worker
+    name: ai-memory-worker
+    runtime: python3
+    plan: starter
+    
+    buildCommand: pip install -r requirements_render.txt
+    
+    startCommand: |
+      celery -A ai_multi_worker worker \
+        --loglevel=info \
+        --queues=memory_queue \
+        --concurrency=1 \
+        --hostname=memory_worker@%h \
+        --max-tasks-per-child=75
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pon-redis
+          property: connectionString
+      - key: WORKER_TYPE
+        value: memory_worker
+      - key: ENVIRONMENT
+        value: production
+
+  # =======================================
+  # SSH TERMINAL SERVICE - Instant Grok AI
+  # =======================================
+  - type: web
+    name: instant-grok-terminal
+    runtime: python3
+    plan: starter
+    
+    buildCommand: |
+      pip install -r requirements_render.txt
+      echo "🔧 Setting up SSH Terminal for instant Grok access..."
+    
+    startCommand: |
+      python instant_grok_terminal.py --port=$PORT --production
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: TERMINAL_THEME
+        value: cyberpunk
+      - key: ENABLE_ASCII_ART
+        value: "true"
+      - key: SSH_ENABLED
+        value: "true"
+
+# =======================================
+# DATABASES & INFRASTRUCTURE
+# =======================================
+
+databases:
+  # Redis - Message Broker & Caching
+  - name: pon-redis
+    plan: starter  # $7/month - 256MB RAM
+    maxmemoryPolicy: allkeys-lru
+    
+  # PostgreSQL - Main Database  
+  - name: pon-database
+    plan: starter  # $7/month - 256MB RAM
+    databaseName: pon_ecosystem
+    user: pon_user
+
+# =======================================
+# STATIC ASSETS & DOCUMENTATION
+# =======================================
+
+  # Documentation Site
+  - type: static
+    name: pon-docs
+    buildCommand: |
+      echo "📚 Building Documentation Site..."
+      mkdir -p public
+      
+      # Copy documentation
+      cp -r docs/* public/ 2>/dev/null || true
+      cp *.md public/ 2>/dev/null || true
+      
+      # Create index page
+      cat > public/index.html << 'EOF'
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>PON Ecosystem Documentation</title>
+          <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }
+              .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+              .badge { background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+          </style>
+      </head>
+      <body>
+          <div class="header">
+              <h1>🎯 PON Ecosystem</h1>
+              <p>Complete AI-powered video processing and terminal system</p>
+          </div>
+          
+          <div class="section">
+              <h2>🚀 Active Services</h2>
+              <p><span class="badge">LIVE</span> Frontend: Video Interface</p>
+              <p><span class="badge">LIVE</span> Backend: Video Processing API</p>
+              <p><span class="badge">LIVE</span> AI Terminal: Instant Grok Access</p>
+              <p><span class="badge">LIVE</span> CEO AI: Strategic Orchestration</p>
+              <p><span class="badge">LIVE</span> Multi-Workers: Distributed AI Tasks</p>
+          </div>
+          
+          <div class="section">
+              <h2>📖 Documentation</h2>
+              <ul>
+                  <li><a href="RENDER_DEPLOY.md">Deployment Guide</a></li>
+                  <li><a href="MULTI_WORKER_README.md">Multi-Worker System</a></li>
+                  <li><a href="AI_SYSTEM_README.md">AI System Overview</a></li>
+                  <li><a href="SECURITY_README.md">Security Guidelines</a></li>
+              </ul>
+          </div>
+          
+          <div class="section">
+              <h2>🔗 Quick Access</h2>
+              <p><strong>Main App:</strong> <a href="https://pon-ecosystem.onrender.com">https://pon-ecosystem.onrender.com</a></p>
+              <p><strong>SSH Terminal:</strong> <code>ssh user@instant-grok-terminal.onrender.com</code></p>
+              <p><strong>API Docs:</strong> <a href="https://pon-ecosystem.onrender.com/docs">https://pon-ecosystem.onrender.com/docs</a></p>
+          </div>
+      </body>
+      </html>
+      EOF
+      
+      echo "✅ Documentation site ready!"
+      
+    publishPath: public
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+
+# =======================================
+# ENVIRONMENT GROUPS
+# =======================================
+
+envVarGroups:
+  - name: ai-common
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: GROK_MODEL
+        value: grok-3-fast
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO

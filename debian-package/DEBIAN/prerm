@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+# Stop the service
+systemctl stop live-ai-terminal || true
+systemctl disable live-ai-terminal || true
+
+# Remove service files
+rm -f /etc/systemd/system/live-ai-terminal.service
+
+# Clean up directories (but keep user data)
+rm -rf /var/lib/live-ai-terminal/venv
+rm -rf /usr/share/live-ai-terminal
+
+# Reload systemd
+systemctl daemon-reload || true
+
+echo "Live AI Terminal removed successfully!"

@@ -1,0 +1,21 @@
+Package: live-ai-terminal
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.8), python3-pip, python3-venv
+Maintainer: Live AI Terminal Team <support@live-ai-terminal.dev>
+Description: Self-improving AI terminal with live thought processing
+ Live AI Terminal is an advanced terminal interface that integrates with
+ Grok AI to provide real-time conversation, thought processing visualization,
+ automatic error detection and fixing, and self-improvement capabilities.
+ .
+ Features:
+  * Live AI conversation with Grok integration
+  * Real-time thought processing display with ASCII art
+  * Automatic error monitoring and fixing
+  * Self-improvement engine with performance optimization
+  * Sentry integration for monitoring and analytics
+  * Comprehensive logging and metrics
+  * Auto-updating system with version control
+Homepage: https://github.com/live-ai-terminal/terminal

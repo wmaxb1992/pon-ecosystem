@@ -1,0 +1,66 @@
+#!/bin/bash
+set -e
+
+# Create user and group for live-ai-terminal
+if ! getent group live-ai-terminal >/dev/null; then
+    addgroup --system live-ai-terminal
+fi
+
+if ! getent passwd live-ai-terminal >/dev/null; then
+    adduser --system --ingroup live-ai-terminal --home /var/lib/live-ai-terminal \
+            --no-create-home --gecos "Live AI Terminal service" live-ai-terminal
+fi
+
+# Create directories
+mkdir -p /var/lib/live-ai-terminal
+mkdir -p /var/log/live-ai-terminal
+mkdir -p /etc/live-ai-terminal
+
+# Set permissions
+chown -R live-ai-terminal:live-ai-terminal /var/lib/live-ai-terminal
+chown -R live-ai-terminal:live-ai-terminal /var/log/live-ai-terminal
+chmod 755 /var/lib/live-ai-terminal
+chmod 755 /var/log/live-ai-terminal
+
+# Install Python dependencies
+echo "Installing Python dependencies..."
+if command -v pip3 >/dev/null 2>&1; then
+    pip3 install --break-system-packages -r /usr/share/live-ai-terminal/requirements.txt 2>/dev/null || \
+    pip3 install -r /usr/share/live-ai-terminal/requirements.txt
+else
+    echo "Warning: pip3 not found. Please install Python dependencies manually."
+fi
+
+# Create virtual environment for the service
+if python3 -m venv --help >/dev/null 2>&1; then
+    python3 -m venv /var/lib/live-ai-terminal/venv
+    /var/lib/live-ai-terminal/venv/bin/pip install -r /usr/share/live-ai-terminal/requirements.txt
+fi
+
+# Copy configuration template
+if [ ! -f /etc/live-ai-terminal/config.env ]; then
+    cp /usr/share/live-ai-terminal/config.template.env /etc/live-ai-terminal/config.env
+    echo "Created default configuration at /etc/live-ai-terminal/config.env"
+fi
+
+# Set permissions
+chown -R live-ai-terminal:live-ai-terminal /var/lib/live-ai-terminal
+chmod 644 /etc/live-ai-terminal/config.env
+chmod +x /usr/local/bin/live-ai-terminal
+
+# Enable systemd service (but don't start automatically)
+systemctl daemon-reload
+systemctl enable live-ai-terminal
+
+echo ""
+echo "═══════════════════════════════════════════════════════"
+echo "    Live AI Terminal installed successfully!"
+echo "═══════════════════════════════════════════════════════"
+echo ""
+echo "📋 Next steps:"
+echo "  1. Configure API keys: sudo nano /etc/live-ai-terminal/config.env"
+echo "  2. Start the terminal: live-ai-terminal"
+echo "  3. Start as service: sudo systemctl start live-ai-terminal"
+echo ""
+echo "📖 Documentation: /usr/share/live-ai-terminal/README.md"
+echo ""

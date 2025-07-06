@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""
+Live AI Terminal - Self-Improving AI Terminal Interface
+======================================================
+Production entry point for the Debian package installation.
+"""
+
+import sys
+import os
+import subprocess
+from pathlib import Path
+
+# Add the application directory to Python path
+APP_DIR = "/var/lib/live-ai-terminal"
+if os.path.exists(APP_DIR):
+    sys.path.insert(0, APP_DIR)
+
+def check_requirements():
+    """Check if all requirements are met"""
+    missing = []
+    
+    # Check Python version
+    if sys.version_info < (3, 8):
+        print("❌ Python 3.8 or higher is required")
+        return False
+    
+    # Check for required packages
+    required_packages = ['requests', 'asyncio']
+    for package in required_packages:
+        try:
+            __import__(package)
+        except ImportError:
+            missing.append(package)
+    
+    if missing:
+        print(f"❌ Missing packages: {', '.join(missing)}")
+        print("Installing missing packages...")
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install"] + missing, check=True)
+            print("✅ Dependencies installed successfully")
+        except subprocess.CalledProcessError:
+            print("❌ Failed to install dependencies")
+            return False
+    
+    return True
+
+def check_config():
+    """Check configuration and guide user if needed"""
+    config_file = "/etc/live-ai-terminal/config.env"
+    
+    if not os.path.exists(config_file):
+        print("\n🔧 First-time setup required!")
+        print("Creating configuration file...")
+        
+        # Create config directory
+        os.makedirs("/etc/live-ai-terminal", exist_ok=True)
+        
+        # Create default config
+        with open(config_file, 'w') as f:
+            f.write("""# Live AI Terminal Configuration
+# Set your API keys and preferences here
+
+# Grok API Key (required for AI functionality)
+GROK_API_KEY=your_grok_api_key_here
+
+# Sentry DSN (optional, for monitoring)
+SENTRY_DSN=your_sentry_dsn_here
+
+# Terminal settings
+AUTO_IMPROVE=true
+LOG_LEVEL=INFO
+""")
+        
+        print(f"✅ Created config file: {config_file}")
+        print("\n🔑 IMPORTANT: Please edit the config file to add your API keys:")
+        print(f"   sudo nano {config_file}")
+        print("\nGet your Grok API key from: https://grok.x.ai/")
+        print("Then run 'live-ai-terminal' again to start!")
+        return False
+    
+    # Load and validate config
+    config = {}
+    with open(config_file, 'r') as f:
+        for line in f:
+            if line.strip() and not line.startswith('#'):
+                key, value = line.strip().split('=', 1)
+                config[key] = value
+    
+    # Check for API key
+    if config.get('GROK_API_KEY', 'your_grok_api_key_here') == 'your_grok_api_key_here':
+        print("\n⚠️  Grok API key not configured!")
+        print(f"Please edit: {config_file}")
+        print("Add your Grok API key to enable AI functionality")
+        print("\nYou can still use basic features without the API key.")
+        
+        response = input("Continue without AI features? (y/N): ")
+        if response.lower() != 'y':
+            return False
+    
+    # Set environment variables
+    for key, value in config.items():
+        os.environ[key] = value
+    
+    return True
+
+def main():
+    """Main entry point"""
+    print("🚀 Starting Live AI Terminal...")
+    
+    # Check requirements
+    if not check_requirements():
+        sys.exit(1)
+    
+    # Check configuration
+    if not check_config():
+        sys.exit(1)
+    
+    # Import and start the terminal
+    try:
+        if os.path.exists(APP_DIR):
+            # Production installation
+            sys.path.insert(0, APP_DIR)
+        
+        from live_ai_terminal import main as terminal_main
+        terminal_main()
+    
+    except ImportError as e:
+        print(f"❌ Failed to import Live AI Terminal: {e}")
+        print("Please ensure the package is properly installed")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n👋 Goodbye!")
+        sys.exit(0)
+    except Exception as e:
+        print(f"❌ Fatal error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

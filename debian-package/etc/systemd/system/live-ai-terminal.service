@@ -1,0 +1,26 @@
+[Unit]
+Description=Live AI Terminal Self-Improvement Service
+After=network.target
+
+[Service]
+Type=simple
+User=live-ai-terminal
+Group=live-ai-terminal
+WorkingDirectory=/var/lib/live-ai-terminal
+Environment=PYTHONPATH=/var/lib/live-ai-terminal
+Environment=LOG_LEVEL=INFO
+ExecStart=/var/lib/live-ai-terminal/venv/bin/python -m live_ai_terminal_service
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/live-ai-terminal /var/log/live-ai-terminal
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

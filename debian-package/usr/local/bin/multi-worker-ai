@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""
+Multi-Worker AI Terminal Entry Point
+===================================
+Entry point for the multi-worker AI terminal system.
+"""
+
+import sys
+import os
+from pathlib import Path
+
+# Add the application directory to Python path
+APP_DIR = "/usr/share/live-ai-terminal"
+if os.path.exists(APP_DIR):
+    sys.path.insert(0, APP_DIR)
+
+def check_redis():
+    """Check if Redis is running"""
+    try:
+        import redis
+        client = redis.Redis(host='localhost', port=6379, db=0)
+        client.ping()
+        return True
+    except Exception:
+        return False
+
+def start_redis():
+    """Start Redis if not running"""
+    import subprocess
+    try:
+        subprocess.run(['redis-server', '--daemonize', 'yes'], check=True)
+        print("✅ Redis started")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to start Redis: {e}")
+        return False
+
+def main():
+    """Main entry point for multi-worker terminal"""
+    print("🚀 Starting Multi-Worker AI Terminal...")
+    
+    # Check Redis
+    if not check_redis():
+        print("🔴 Redis not running, attempting to start...")
+        if not start_redis():
+            print("❌ Could not start Redis. Please start it manually:")
+            print("   redis-server --daemonize yes")
+            return 1
+    
+    # Load configuration
+    config_file = "/etc/live-ai-terminal/config.env"
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#') and '=' in line:
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+    
+    # Import and start the multi-worker terminal
+    try:
+        from multi_worker_terminal import MultiWorkerTerminal
+        terminal = MultiWorkerTerminal()
+        terminal.start()
+        return 0
+    except ImportError as e:
+        print(f"❌ Failed to import multi-worker terminal: {e}")
+        return 1
+    except KeyboardInterrupt:
+        print("\n👋 Goodbye!")
+        return 0
+    except Exception as e:
+        print(f"❌ Fatal error: {e}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

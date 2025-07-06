@@ -35,8 +35,7 @@ The `render.yaml` file already includes all necessary environment variables:
 - **Main Web App**: `pon-ecosystem.onrender.com`
 - **SSH Terminal**: `instant-grok-terminal.onrender.com`
 - **CEO AI Bot**: Background orchestration service
-- **Multi-Workers**: 3 AI workers (Code, QA, Memory)
-- **Documentation**: Static docs site
+- **Multi-Workers**: 4 AI workers (2x Code, QA, Memory)
 
 ### Databases:
 - **Redis**: Message broker and caching
@@ -47,7 +46,6 @@ The `render.yaml` file already includes all necessary environment variables:
 ### Web Interfaces:
 - **Main App**: https://pon-ecosystem.onrender.com
 - **API Docs**: https://pon-ecosystem.onrender.com/docs
-- **Documentation**: https://pon-docs.onrender.com
 
 ### SSH Terminal Access:
 ```bash
@@ -75,12 +73,11 @@ help
 
 ## 💰 Cost Breakdown (Render.com)
 - **Main Web Service**: $25/month (Standard plan)
-- **Workers (4 services)**: $28/month ($7 each)
+- **Workers (5 services)**: $35/month ($7 each)
 - **Redis**: $7/month (Starter)
 - **PostgreSQL**: $7/month (Starter)
-- **Static Site**: Free
 
-**Total: ~$67/month** for complete production infrastructure
+**Total: ~$74/month** for complete production infrastructure
 
 ## 🔧 Post-Deployment
 

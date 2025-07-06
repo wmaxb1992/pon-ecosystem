@@ -320,17 +320,16 @@ services:
       - key: SSH_ENABLED
         value: "true"
 
-# =======================================
-# DATABASES & INFRASTRUCTURE
-# =======================================
-
-databases:
-  # Redis - Message Broker & Caching
+  # =======================================
+  # REDIS DATABASE SERVICE
+  # =======================================
   - type: redis
     name: pon-redis
     plan: free  # Free plan - 25MB RAM, sufficient for development and small production
-    
-  # PostgreSQL - Main Database  
+
+  # =======================================
+  # POSTGRESQL DATABASE SERVICE  
+  # =======================================
   - type: postgres
     name: pon-database
     plan: free  # Free plan - 1GB storage, sufficient for development and small production

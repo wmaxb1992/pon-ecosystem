@@ -101,8 +101,7 @@ services:
           name: pon-redis
           property: connectionString
       - key: DATABASE_URL
-        fromService:
-          type: postgres
+        fromDatabase:
           name: pon-database
           property: connectionString
       
@@ -327,14 +326,15 @@ services:
     name: pon-redis
     plan: free  # Free plan - 25MB RAM, sufficient for development and small production
 
-  # =======================================
-  # POSTGRESQL DATABASE SERVICE  
-  # =======================================
-  - type: postgres
-    name: pon-database
-    plan: free  # Free plan - 1GB storage, sufficient for development and small production
+# =======================================
+# DATABASES
+# =======================================
+
+databases:
+  - name: pon-database
     databaseName: pon_ecosystem
     user: pon_user
+    plan: free  # Free plan - 1GB storage, sufficient for development and small production
 
 # =======================================
 # ENVIRONMENT GROUPS

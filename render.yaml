@@ -19,7 +19,7 @@ services:
   # ===========================================
   - type: web
     name: pon-ecosystem
-    runtime: python3
+    runtime: python
     plan: standard  # $25/month for production workloads
     region: ohio     # ohio, oregon, or singapore
     
@@ -141,7 +141,7 @@ services:
   # =======================================
   - type: worker
     name: ceo-ai-bot
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: |
@@ -174,7 +174,7 @@ services:
   # Code Generation Worker
   - type: worker
     name: ai-code-worker
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: pip install -r requirements_render.txt
@@ -205,7 +205,7 @@ services:
   # Code Generation Worker - Instance 2
   - type: worker
     name: ai-code-worker-2
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: pip install -r requirements_render.txt
@@ -236,7 +236,7 @@ services:
   # Quality Assurance Worker
   - type: worker
     name: ai-quality-worker
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: pip install -r requirements_render.txt
@@ -267,7 +267,7 @@ services:
   # Memory Management Worker  
   - type: worker
     name: ai-memory-worker
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: pip install -r requirements_render.txt
@@ -300,7 +300,7 @@ services:
   # =======================================
   - type: web
     name: instant-grok-terminal
-    runtime: python3
+    runtime: python
     plan: starter
     
     buildCommand: |

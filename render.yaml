@@ -24,7 +24,7 @@ services:
     region: ohio     # ohio, oregon, or singapore
     
     # Auto-deploy on GitHub push to main
-    autoDeploy: true
+    autoDeployTrigger: commit  # Modern replacement for autoDeploy: true
     branch: main
     
     # Build the entire ecosystem
@@ -97,7 +97,7 @@ services:
       # Database URLs
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: DATABASE_URL
@@ -158,7 +158,7 @@ services:
         value: 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
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: WORKER_TYPE
@@ -193,7 +193,7 @@ services:
         value: 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
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: WORKER_TYPE
@@ -224,7 +224,7 @@ services:
         value: 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
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: WORKER_TYPE
@@ -255,7 +255,7 @@ services:
         value: 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
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: WORKER_TYPE
@@ -286,7 +286,7 @@ services:
         value: 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
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: pon-redis
           property: connectionString
       - key: WORKER_TYPE
@@ -322,9 +322,12 @@ services:
   # =======================================
   # REDIS DATABASE SERVICE
   # =======================================
-  - type: redis
+  - type: keyvalue  # Modern type for Redis/Key-Value instances
     name: pon-redis
     plan: free  # Free plan - 25MB RAM, sufficient for development and small production
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: "Allow external connections for development"
 
 # =======================================
 # DATABASES

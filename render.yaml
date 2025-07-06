@@ -368,6 +368,42 @@ services:
         value: "true"
 
   # =======================================
+  # 24/7 AUTONOMOUS IMPROVEMENT EXECUTOR
+  # =======================================
+  - type: worker
+    name: autonomous-executor
+    runtime: python
+    plan: starter
+    
+    buildCommand: |
+      echo "🤖 Setting up 24/7 Autonomous Improvement System..."
+      pip install --upgrade pip
+      pip install -r requirements_render.txt
+      
+      # Verify AI dependencies
+      python -c "import json, asyncio, subprocess; print('✅ Autonomous executor dependencies installed')"
+      
+      echo "✅ 24/7 Autonomous Executor ready for cloud operation!"
+    
+    startCommand: |
+      echo "🌟 Starting 24/7 Autonomous Improvement System..."
+      python cloud_autonomous_executor.py --cloud-mode
+    
+    envVars:
+      - key: GROK_API_KEY
+        value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: AUTONOMOUS_MODE
+        value: "true"
+      - key: CLOUD_EXECUTOR
+        value: "true"
+      - key: IMPROVEMENT_INTERVAL
+        value: "300"  # 5 minutes
+      - key: ENVIRONMENT
+        value: production
+
+  # =======================================
   # REDIS DATABASE SERVICE
   # =======================================
   - type: keyvalue  # Modern type for Redis/Key-Value instances

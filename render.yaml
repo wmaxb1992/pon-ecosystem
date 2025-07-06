@@ -331,21 +331,35 @@ services:
     plan: starter
     
     buildCommand: |
-      echo "🔧 Setting up SSH Terminal for instant Grok access..."
+      echo "🔧 Setting up SSH-enabled Grok Terminal..."
       pip install --upgrade pip
       pip install -r requirements_render.txt
       
-      # Verify critical imports work
-      python -c "import requests, rich; print('✅ Terminal dependencies installed')"
+      # Verify SSH and terminal dependencies
+      python -c "import asyncssh, requests, fastapi, uvicorn; print('✅ SSH Terminal dependencies installed')"
       
-      echo "✅ SSH Terminal build complete!"
+      # Generate SSH host key if needed
+      python -c "
+      import asyncssh, os
+      if not os.path.exists('ssh_host_key'):
+          print('🔐 Generating SSH host key...')
+          key = asyncssh.generate_private_key('ssh-rsa', key_size=2048)
+          key.write_private_key('ssh_host_key')
+          print('✅ SSH host key generated')
+      else:
+          print('✅ SSH host key already exists')
+      "
+      
+      echo "✅ SSH-enabled Grok Terminal build complete!"
     
     startCommand: |
-      python instant_grok_terminal.py --port=$PORT --production
+      python grok_terminal_enhanced.py --production
     
     envVars:
       - key: GROK_API_KEY
         value: xai-E7Ml5WgMcMYT0lxew2n1b6EwlD8oD3x8OOVuX4OvxSUI9IvLhT2B3ZpESW52N50l2qBNckXyRRkEzv6N
+      - key: SSH_PORT
+        value: "2222"
       - key: TERMINAL_THEME
         value: cyberpunk
       - key: ENABLE_ASCII_ART

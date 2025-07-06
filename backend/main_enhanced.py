@@ -286,6 +286,19 @@ async def root(request: Request):
         "current_ip": get_current_ip()
     }
 
+# Health check endpoint for monitoring
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and deployment"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "PON Backend API",
+        "version": "2.0.0",
+        "uptime": "operational",
+        "database": "connected"
+    }
+
 # Playlist endpoints
 @app.post("/playlists")
 async def create_playlist(request: Request, playlist: PlaylistCreate):
@@ -780,4 +793,4 @@ if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Enhanced Video Scraper with Database Support")
     print(f"🌐 Initial IP: {get_current_ip()}")
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

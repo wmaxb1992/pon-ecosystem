@@ -26,8 +26,8 @@ class DeploymentMonitor:
     def check_local_services(self):
         """Check all local services are running"""
         services = {
-            "Backend API": "http://localhost:8000/health",
-            "Frontend": "http://localhost:3001",
+            "Backend API": "http://localhost:8000",
+            "Frontend": "http://localhost:3000",
         }
         
         status = {}
@@ -35,6 +35,28 @@ class DeploymentMonitor:
             try:
                 response = requests.get(url, timeout=5)
                 status[name] = "✅ Running" if response.status_code == 200 else f"❌ Error {response.status_code}"
+            except Exception as e:
+                status[name] = f"❌ Down: {str(e)[:50]}"
+                
+        return status
+    
+    def check_cloud_services(self):
+        """Check cloud deployment status"""
+        cloud_services = {
+            "PON Ecosystem": "https://pon-ecosystem.onrender.com/health",
+            "AI Terminal": "https://instant-grok-terminal.onrender.com/",
+        }
+        
+        status = {}
+        for name, url in cloud_services.items():
+            try:
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    status[name] = "✅ Live"
+                elif response.status_code == 502:
+                    status[name] = "🔄 Starting/Deploying"
+                else:
+                    status[name] = f"❌ Error {response.status_code}"
             except Exception as e:
                 status[name] = f"❌ Down: {str(e)[:50]}"
                 
@@ -72,10 +94,16 @@ class DeploymentMonitor:
         print(f"🔄 TASK CYCLE #{self.task_count} - {cycle_start.strftime('%H:%M:%S')}")
         print("="*70)
         
-        # Task 1: Service Health Check
-        self.log_status("📊 Task 1: Checking service health...")
+        # Task 1: Local Service Health Check
+        self.log_status("📊 Task 1: Checking local services...")
         service_status = self.check_local_services()
         for service, status in service_status.items():
+            self.log_status(f"   {service}: {status}")
+        
+        # Task 1b: Cloud Service Health Check
+        self.log_status("☁️ Task 1b: Checking cloud services...")
+        cloud_status = self.check_cloud_services()
+        for service, status in cloud_status.items():
             self.log_status(f"   {service}: {status}")
         
         # Task 2: AI System Validation
@@ -107,7 +135,8 @@ class DeploymentMonitor:
         status = {
             "timestamp": datetime.now().isoformat(),
             "cycle": self.task_count,
-            "services": self.check_local_services(),
+            "local_services": self.check_local_services(),
+            "cloud_services": self.check_cloud_services(),
             "ai_status": self.validate_ai_systems(),
             "git_status": self.check_git_status(),
             "uptime": str(datetime.now() - self.start_time),
